@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Brand New — Live Recordings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Inter:wght@300;400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0d; --surface: #141414; --surface2: #1c1c1c;
+    --border: #2a2a2a; --accent: #8b0000; --accent2: #b22222;
+    --text: #c9c9c9; --text-dim: #666; --text-bright: #e8e8e8;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 300; min-height: 100vh; }
+  #header { text-align: center; padding: 3rem 1rem 2rem; border-bottom: 1px solid var(--border); }
+  #header h1 { font-family: 'IM Fell English', serif; font-size: clamp(2rem,6vw,3.5rem); color: var(--text-bright); letter-spacing: 0.08em; text-transform: uppercase; }
+  #header p { font-size: 0.75rem; letter-spacing: 0.25em; color: var(--text-dim); margin-top: 0.4rem; text-transform: uppercase; }
+  #app { display: flex; min-height: calc(100vh - 120px); }
+  #sidebar { width: 230px; min-width: 230px; border-right: 1px solid var(--border); padding: 1.5rem 0; position: sticky; top: 0; height: calc(100vh - 120px); overflow-y: auto; }
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .year-group { margin-bottom: 0.25rem; }
+  .year-label { font-family: 'IM Fell English', serif; font-size: 1.1rem; color: #5a5a5a; padding: 0.4rem 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; user-select: none; }
+  .year-label:hover { color: var(--text); }
+  .year-label.open { color: var(--text-bright); }
+  .year-label .arrow { font-size: 0.6rem; transition: transform 0.2s; color: var(--text-dim); display: inline-block; }
+  .year-label.open .arrow { transform: rotate(90deg); }
+  .show-list { display: none; padding: 0.2rem 0; }
+  .show-list.open { display: block; }
+  .show-item { padding: 0.35rem 1rem 0.35rem 2rem; font-size: 0.76rem; color: var(--text-dim); cursor: pointer; transition: color 0.15s, background 0.15s; letter-spacing: 0.03em; line-height: 1.4; }
+  .show-item:hover { color: var(--text); background: var(--surface); }
+  .show-item.active { color: var(--accent2); font-weight: 500; }
+  #content { flex: 1; padding: 2.5rem 3rem; max-width: 820px; }
+  #welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; gap: 1.2rem; }
+  #welcome-photo { width: 100%; max-height: 340px; object-fit: cover; object-position: center 25%; display: block; border-bottom: 1px solid var(--border); }
+  #welcome h2 { font-family: 'IM Fell English', serif; font-size: 1.8rem; color: var(--text-bright); font-style: italic; }
+  #welcome p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.8; max-width: 340px; }
+  .divider { width: 60px; height: 1px; background: var(--accent); margin: 0 auto; }
+  .stats-grid { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+  .stat-num { font-family: 'IM Fell English', serif; font-size: 2rem; color: var(--text-bright); line-height: 1; }
+  .stat-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+  #show-page { display: none; }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .badge { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 3px; font-weight: 500; }
+  .badge-must { background: #3a0000; color: #ff6b6b; border: 1px solid #8b0000; }
+  .badge-soundboard { background: #0a1a2a; color: #6baeff; border: 1px solid #1a4a7a; }
+  .badge-recommended { background: #1a2a0a; color: #8adf5a; border: 1px solid #3a6a1a; }
+  .show-date { font-family: 'IM Fell English', serif; font-size: 2.2rem; color: var(--text-bright); margin-bottom: 0.4rem; }
+  .show-venue { font-size: 1rem; color: var(--text); margin-bottom: 0.2rem; }
+  .show-location { font-size: 0.78rem; letter-spacing: 0.15em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+  .link-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1.2rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+  .link-btn:hover { border-color: var(--accent2); background: var(--surface2); color: var(--text-bright); }
+  .link-btn .icon { font-size: 1.4rem; }
+  .notes-section { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 4px; padding: 1.2rem 1.5rem; }
+  .notes-label { font-size: 0.65rem; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.6rem; }
+  .notes-text { font-size: 0.875rem; line-height: 1.75; color: var(--text); font-style: italic; }
+  .setlist-section { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid #1a4a7a; border-radius: 4px; padding: 1.2rem 1.5rem; margin-top: 1rem; }
+  .setlist-songs { list-style: none; margin-top: 0.4rem; }
+  .setlist-songs li { font-size: 0.85rem; color: var(--text); padding: 0.25rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+  .setlist-songs li:last-child { border-bottom: none; }
+  .setlist-num { font-size: 0.7rem; color: var(--text-dim); min-width: 1.4rem; }
+  .setlist-tape { font-size: 0.7rem; color: #6baeff; margin-left: auto; letter-spacing: 0.05em; }
+  .setlist-encore-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-top: 0.6rem; margin-bottom: 0.2rem; }
+  .player-section { margin-bottom: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.2rem 1.5rem; }
+  .player-section .notes-label { margin-bottom: 0.8rem; }
+  .player-loading { color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
+  .track-list { list-style: none; }
+  .track-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .track-item:last-child { border-bottom: none; }
+  .track-item:hover .track-name { color: var(--text-bright); }
+  .track-item.playing .track-name { color: var(--accent2); }
+  .track-btn { background: none; border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; min-width: 28px; color: var(--text); cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; }
+  .track-item:hover .track-btn, .track-item.playing .track-btn { border-color: var(--accent2); color: var(--accent2); }
+  .track-name { font-size: 0.82rem; color: var(--text); flex: 1; }
+  .audio-bar { margin-top: 1rem; }
+  .audio-bar audio { width: 100%; height: 36px; filter: invert(0.85) hue-rotate(140deg); }
+  @media (max-width: 650px) { #sidebar { display: none; } #content { padding: 1.5rem; } }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>Brand New Archive</h1>
+  <p>The Complete* Live Collection 2000–2025</p>
+</div>
+<div id="app">
+  <nav id="sidebar"></nav>
+  <main id="content">
+    <div id="welcome">
+      <div class="divider"></div>
+      <h2>Live Recordings Archive</h2>
+      <div class="stats-grid" id="stats-grid"></div>
+      <p>Select a date from the sidebar to view links, setlist, and more.</p>
+      <div class="divider"></div>
+    </div>
+    <div id="show-page"></div>
+  </main>
+</div>
+<script>
+const shows = [
+  {date:"11/18/2000",venue:"The Downtown",city:"Farmingdale",region:"NY",download:"https://drive.google.com/drive/folders/19zdvaYlvylfCWpXh5JZ1sqP1ZP7UAMO3?usp=drive_link",stream:"https://archive.org/details/brandnewthedowntown2000",setlist:"http://www.setlist.fm/setlist/brand-new/2000/the-downtown-farmingdale-ny-6bc76ae2.html",video:"",notes:"Released by Mike Dubin in late 2013, this may be the earliest full band Brand New recording. Solid quality recording that features a \"Fuck You Hoe, My Nine Rides Shotgun,\" a never released \"Untitled\" song, and the original 2000 demo-sounding version of \"Jude Law and a Semester Abroad.\" This is about as early as a look you can get into Brand New."},
+  {date:"2001",venue:"The Stone Pony",city:"Asbury Park",region:"NJ",download:"https://drive.google.com/drive/folders/13ui1e3G7yQKrgr83L8y7Q4Pz3lwbtRb-?usp=drive_link",stream:"",setlist:"",video:"",notes:"Not the greatest quality, but a fun show for the sake of hearing a very young Brand New fresh off the heels of the \"Your Favorite Weapon\" release have a field day with a rabid crowd. \"This song is called 'There's No I In Team'\" introduction to \"Seventy Times 7.\" The exact date of this show is unknown. If anyone can help fill that in it would be greatly appreciated."},
+  {date:"7/31/2002",venue:"The Epicentre",city:"San Diego",region:"CA",download:"https://drive.google.com/drive/folders/10-lB-3RgS-Edon_WeqX1IPt0bTEv2_Vf?usp=drive_link",stream:"https://archive.org/details/brandnewepicentre2002",setlist:"http://www.setlist.fm/setlist/brand-new/2002/epicentre-san-diego-ca-73dace75.html",video:"",notes:"Very blown out, rough recording, not recommended. Features 7 song YFW set."},
+  {date:"8/23/2002",venue:"Birch Hill Night Club",city:"Old Bridge",region:"NJ",download:"https://drive.google.com/drive/folders/13c66wT22AxXFOHqW9_izHQuBIWBB8V-S?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2002/birch-hill-nite-club-old-bridge-nj-6bdc66da.html",video:"",notes:"Mildly muffled recording (could be worse) with a high-energy all YFW setlist and lots of crowd scream/sing-a-longs."},
+  {date:"11/2/2002",venue:"Meow Meow Club",city:"Portland",region:"OR",download:"https://drive.google.com/drive/folders/11Sd2wnOZunltAEtWO_saqkJh2UQxNHTm?usp=drive_link",stream:"https://archive.org/details/brandnewmeowmeowclub2002",setlist:"http://www.setlist.fm/setlist/brand-new/2002/meow-meow-club-portland-or-4bd0a7f2.html",video:"https://www.youtube.com/watch?v=QYHJ75pDIms",notes:"The recording can be just a tad too loud at times (it's still damn good) and your mileage may vary depending on how much you desire live Your Favorite Weapon content, but this one is still worth a download for a few reasons. For one thing, in the 2000-2003 era this is easily one of the best bootlegs that exists of Brand New's material. The set features some funny banter (why is Jesse rocking out in a hoodie indoors?), a groovy full band rock out for the breakdown of \"Soco Amaretto Lime\" (not sure this exists on any other recording), a jammed out \"Jude Law,\" the always welcome \"Moshi Moshi\" and lively renditions of other YFW material. Fun to think that during this, or shortly thereafter, the pieces that would become \"Deja\" would begin to assemble. There is a full video bootleg of this show available on YouTube that features different audio and is worth seeking out."},
+  {date:"12/5/2002",venue:"Metro",city:"Chicago",region:"IL",download:"https://drive.google.com/drive/folders/12GTEbJKWpwiAodbxDnaUlwsHGE259tMk?usp=sharing",stream:"https://archive.org/details/brandnewchicago2002",setlist:"https://www.setlist.fm/setlist/brand-new/2002/metro-chicago-il-53949f59.html",video:"",notes:"A show that has long, or perhaps always, been out of circulation due to a labeling issue: the set was marked as \"The Movielife\" and the date was incorrectly set as April 16th, 2002. Prior to this recording resurfacing from an old website, the setlist was not even on Setlist.fm. The Movielife was directionally accurate as this show at Chicago's Metro was a part of a massive 2002 tour where Brand New was opening for The Movielife. Thankfully it's out of the shadows now and that's a good thing because for the era this is a rather solid audience recording, with a longer set of 10 songs on top."},
+  {date:"3/14/2003",venue:"The Zodiac",city:"Oxford",region:"UK",download:"https://drive.google.com/drive/folders/1KC_D4o319FIVrI1qy-tsaPAjJiouEQ2D?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2003/the-zodiac-oxford-england-1bdac910.html",video:"",notes:"Good quality recording -- features extended \"Jude Law\" jam intro and the infamous/hysterical \"shut the fuck up\" during \"The No Seatbelt Song.\" He's right: the crowd won't shut up. Brand New was opening for Finch at the show."},
+  {date:"6/25/2003",venue:"Crowbar",city:"State College",region:"PA",download:"https://drive.google.com/drive/folders/1MIjCwmkPHaaAfkliImnnyWFtyxikXKCs?usp=drive_link",stream:"https://archive.org/details/brandnewatcrowbar2003",setlist:"https://www.setlist.fm/setlist/brand-new/2003/crowbar-state-college-pa-3bdad45c.html",video:"https://www.youtube.com/watch?v=klI36u0MfWU",notes:"No review currently available."},
+  {date:"8/2/2003",venue:"Vans Warped Tour, Molson Park",city:"Ontario",region:"CA",download:"https://drive.google.com/drive/folders/1fTZWCIEWGCepK9nEb5KUOtmlICNtWeGc?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2003/molson-park-barrie-on-canada-bdac936.html",video:"",notes:"A 7 song set that takes place before Brand New started doing one of a kind acoustic sets on this Warped Tour run due to Jesse hurting his leg (I believe). Sound quality isn't terrible but not good enough to warrant a must download. I just personally wish someone had recorded one of the acoustic sets because they were really unique."},
+  {date:"8/8/2003",venue:"Vans Warped Tour, Tweeter Center",city:"Camden",region:"NJ",download:"https://drive.google.com/drive/folders/1enClM1nFMmNymPTUDrUmJrqg4q2nsjfG?usp=sharing",stream:"https://archive.org/details/brandnewcamden2003",setlist:"",video:"",notes:"Incomplete set ripped from since removed YouTube recording. Featuring four of the seven songs played (\"I Will Play My Game Beneath The Spin Light,\" \"Jude Law and a Semester Abroad,\" \"Soco Amaretto Lime,\" and \"Seventy Times 7\"). Songs are played in acoustic and electric hybrid with the band sitting down due to Jesse's injury."},
+  {date:"11/17/2003",venue:"KNDD 107.7 The End / End Sessions",city:"Seattle",region:"WA",download:"https://drive.google.com/drive/folders/1798WHQpYPlRczhUESLSJzBCLNCFsRbYD?usp=drive_link",stream:"",setlist:"",video:"",notes:"Full band set ripped from Seattle radio station KNDD 107.7 The End for their \"End Sessions\" series. This is Session #85. Setlist features acoustic and electric/acoustic hybrid versions of \"I Will Play My Game Beneath the Spin Light,\" \"Me vs. Maradona vs. Elvis,\" \"Sic Transit Gloria...Glory Fades,\" \"The Boy Who Blocked His Own Shot\" and \"The Quiet Things That No One Ever Knows.\" Recorded off the radio soundboard, the set is great in terms of sound quality and features relative rarity \"Me vs. Maradona vs. Elvis\" with a unique version."},
+  {date:"11/20/2003",venue:"The Fox Theatre",city:"Boulder",region:"CO",download:"https://drive.google.com/drive/folders/1RvtvoE_-xGXqxcGeQ3vmPIbF9GViuZfW?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2003/fox-theatre-boulder-co-4bdb03f6.html",video:"",notes:"Recording is a bit overblown, but features a YFW and Deja setlist in the midst of the Fall 2003 Deja tour. Bonus points for the rarely played \"Good To Know If I Ever Need Attention All I Have To Do Is Die.\""},
+  {date:"12/14/2003",venue:"KROQ Almost Acoustic Christmas / Universal Amphitheatre",city:"Universal City",region:"CA",download:"https://drive.google.com/drive/folders/1vHXAOyHHl-cbZBsaJE8yMMWMXGPmxoUt?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2003/universal-amphitheatre-universal-city-ca-3bd07470.html",video:"",notes:"A no-frills, straightforward, fast and furious rocking 6-song set comprised of YFW and Deja material at KROQ's Almost Acoustic Christmas in 2003."},
+  {date:"12/23/2003",venue:"Much Music Studios, Live on IMX",city:"New York",region:"NY",download:"https://drive.google.com/drive/folders/1gbGk3N5jCG8hXo60qQhO_kf5gYeWbOQT?usp=drive_link",stream:"",setlist:"",video:"",notes:"Recorded at Much Music (now Fuse) studio in Manhattan. Show was IMX, where you could trade artists/bands like stocks. Great quality recording with unique acoustic/electric hybrids of \"Quiet Things,\" \"Boy Who Blocked\" and \"Sic Transit.\""},
+  {date:"2/11/2004",venue:"BBC Radio",city:"London",region:"UK",download:"https://drive.google.com/drive/folders/1X2tkaOPmgzCFv5BUC57eyfJxrAEAngtt?usp=drive_link",stream:"",setlist:"",video:"",notes:"3 song set for BBC Radio 1, good quality soundboard recording: \"Sic Transit,\" \"Guernica\" and \"Quiet Things.\""},
+  {date:"3/11/2004",venue:"Adelaide Entertainment Centre",city:"Adelaide",region:"Australia",download:"https://drive.google.com/drive/folders/1ARp9NJ8W2skFLL0uiVq6aod_3997Cg-y?usp=drive_link",stream:"",setlist:"",video:"",notes:"Here lies one of the most pleasant surprises since releasing the Archive. A forgotten and previously unreleased audience recording of Brand New opening for Blink-182 in Australia in 2004. Apart from possibly \"Guernica,\" the 7 song set of YFW and Deja material has no real wrinkles, but the recording is very crisp and just about as good as it gets in terms of quality for live shows from this era of Brand New. Recommended download, but most specifically recommended if you're a YFW/Deja era devotee. FLAC rip included."},
+  {date:"4/27/2004",venue:"The Downtown",city:"Farmingdale",region:"NY",download:"https://drive.google.com/drive/folders/1PxucqoLXLccWyJI5zbAwmR0YvI-TwHR5?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/jesse-lacey/2004/the-downtown-farmingdale-ny-2bd25822.html",video:"https://www.youtube.com/watch?v=U7dSGIMQNjE",notes:"Jesse Lacey solo set. This Mike Dubin recording is one of the best recordings you'll find of the band's material, featuring pristine quality and incredible banter from Jesse (for one thing, his dad is the master of Pac-Man). It also features a legendary setlist, mixing one-of-a-kind takes on YFW and Deja material, along with wrenching covers of Jawbreaker's \"Accident Prone\" and Neutral Milk Hotel's \"Two Headed Boy.\" Must download of the highest order. Full video of this set is available on YouTube."},
+  {date:"7/13/2006",venue:"Showbox Comedy and Supper Club",city:"Seattle",region:"WA",download:"https://drive.google.com/drive/folders/1mTfzBRi7Z1rjbKX4mJm2fWKNhge8SBy4?usp=drive_link",stream:"",setlist:"https://www.setlist.fm/setlist/brand-new/2006/showbox-comedy-and-supper-club-seattle-wa-73daf6bd.html",video:"",notes:"No review currently available."},
+  {date:"10/15/2006",venue:"Bamboozle Left / Cal Poly Pomona",city:"Walnut",region:"CA",download:"https://drive.google.com/drive/folders/1ifv0AEvDznqtvzuhIPTLLz4I835t3kj1?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2006/cal-poly-pomona-walnut-ca-43dad3cf.html",video:"",notes:"Nice to see Brand New take \"Devil and God\" songs for a walk a month before the album came out, but overall not recommended due to poor quality recording."},
+  {date:"2007",venue:"97X Green Room",city:"Tampa Bay",region:"FL",download:"https://drive.google.com/drive/folders/1d4U5xreidx48ST1moCItVGA90ZyD6GFE?usp=drive_link",stream:"",setlist:"",video:"",notes:"Two song acoustic set recorded for the 97x Tampa Bay's \"Green Room Series.\" Features \"Degausser\" and \"The Quiet Things That No One Ever Knows.\" Exact date is unknown."},
+  {date:"3/29/2007",venue:"KNDD 107.7 The End / End Sessions",city:"Seattle",region:"WA",download:"https://drive.google.com/drive/folders/1mDcP0PWwGThH2njLsrP85xiB3mIvRmLm?usp=drive_link",stream:"",setlist:"",video:"",notes:"Full band set ripped from Seattle radio station KNDD 107.7 The End for their \"End Sessions\" series. This is Session #142. Fantastic quality from the soundboard recording, the band performs unique acoustic-electric hybrids of five songs: Degausser, Jesus Christ, Luca, Play Crack The Sky (Jesse solo) and Sowing Season."},
+  {date:"4/24/2007",venue:"WFNX Radio / First Act Guitar Studio",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/17lWSzOCGhQE_YnkIFMJXdBE7wZlbTHgA?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/jesse-lacey/2007/first-act-guitar-studio-boston-ma-6bdace6a.html",video:"",notes:"Jesse solo and acoustic on WFNX Radio. Great quality with interesting interview tidbits, including Jesse's thoughts on \"Limousine,\" the 13th Floor Elevators influence on \"Degausser\" and the story of how \"In An Aeroplane Over The Sea\" finally clicked for him. Features fantastic covers of Iron & Wine's \"Upward Over The Mountain\" and Neutral Milk Hotel's \"Oh Comely.\""},
+  {date:"4/24/2007",venue:"Avalon",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/1rKq4VaPDHVmUj6NUD1ZDYcGvgx8ZfJ2C?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/avalon-boston-ma-63d41a03.html",video:"",notes:"Not the best sound quality, not the worst sound quality for an audience recording. Just pretty middle of the road overall, but the setlist has a few nice wrinkles -- \"No Seatbelt,\" \"Handcuffs,\" and \"Good To Know\" sticking out as some of the more rare stuff for sure."},
+  {date:"4/25/2007",venue:"The Electric Factory",city:"Philadelphia",region:"PA",download:"https://drive.google.com/drive/folders/1YPqb9r0BhvniMo-5rcKQcy8IB5AcMYRH?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/electric-factory-philadelphia-pa-63d4c2bb.html",video:"",notes:"Not the best recording, but certainly good enough, and it's hard to argue against how hard Brand New brings it at the Electric Factory every single time. Solid troll by Jesse opening \"Degausser\": \"This song is called 'Seventy Times 7.'\""},
+  {date:"6/9/2007",venue:"UNSW Roundhouse",city:"Sydney",region:"AUS",download:"https://drive.google.com/drive/folders/1HKq2H_dD7emlLAUM1mmekuDM0-H5LaEd?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/unsw-roundhouse-sydney-australia-3d7a14f.html",video:"",notes:"This one has a whole lot going for it, apart from Brand New playing in a place they don't go all that often -- Australia. This is a very good audience bootleg that captures a perfect balance between the band going hard and the audience going hard as well. The set is 21 songs and includes 10 songs off \"Devil and God,\" a jammed out 9-minute long \"Tommy Gun\" and even a mini-cover of Green Day's \"Basket Case.\" Recommended!"},
+  {date:"8/5/2007",venue:"Swell-O-Venue",city:"Jackson",region:"MS",download:"https://drive.google.com/drive/folders/1bx69R7psdSL8-oUJC87sAsNwejbxUtxE?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/jesse-lacey/2007/swell-o-venue-jackson-ms-3db0153.html",video:"",notes:"\"You guys really are the quietest, nicest bunch of kids I've ever played to in my life.\" Jesse's quote during this solo show with Kevin Devine is on point. This soundboard recording captures a unique, intimate show and is certainly under the must-download umbrella."},
+  {date:"8/6/2007",venue:"The Parish",city:"New Orleans",region:"LA",download:"https://drive.google.com/drive/folders/17UUd6uVFAd1bsAGMFLDlgY9ZJECtfzo7?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/jesse-lacey/2007/the-parish-new-orleans-la-3c16967.html",video:"",notes:"Jesse Lacey and Kevin Devine tour, with Grace Read featured on \"Play Crack the Sky.\""},
+  {date:"11/7/2007",venue:"SOMA",city:"San Diego",region:"CA",download:"https://drive.google.com/drive/folders/11Q3fT8SDP6a-gtaTn3FHywIAmwo-8HnS?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/soma-san-diego-ca-73da3251.html",video:"",notes:"The first of a two night stint at the SOMA in San Diego with mewithoutYou and Thrice. Some great stuff here such as a \"Not The Sun\" opener, a \"Karma Police\" tease after \"Luca,\" a wrenching rendition of \"Untitled 01\" and a solid quality 9-minute version of the \"Untitled\" 2007 encore. Recommended."},
+  {date:"11/20/2007",venue:"The House of Blues",city:"New Orleans",region:"LA",download:"https://drive.google.com/drive/folders/1BELhQ4svVa9lmfIBlBOjoAGTvPFNzzVO?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/house-of-blues-new-orleans-la-6bda3242.html",video:"",notes:"This audience recording is a mixture of good and bad. The good: this is really solid quality. Some rare cuts in Sun, \"Untitled 01\" and \"Handcuffs.\" The bad: Some banter appears to have been edited out, and the recording misses the last four songs."},
+  {date:"12/9/2007",venue:"Tsongas Arena",city:"Lowell",region:"MA",download:"https://drive.google.com/drive/folders/1U8btqQdAtIJ0OnOAyMCwgx4rvJXpA2qD?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/tsongas-arena-lowell-ma-43d7839b.html",video:"",notes:"Jesse was sick for this one, which may explain a show full of gutteral, vicious screaming -- and it's awesome. Audience bootleg, but a damn good one in which every song on \"Devil and God\" is played. About the best quality version of the \"Untitled\" 2007 encore you can find -- 11 minutes too!"},
+  {date:"12/17/2007",venue:"Looney Tunes",city:"West Babylon",region:"NY",download:"https://drive.google.com/drive/folders/12dKCXhoWCNq_ki7n44h4C7PVQaZotP01?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2007/looney-tunes-cd-store-west-babylon-ny-23d4249b.html",video:"https://www.youtube.com/watch?v=62teirHPO9k",notes:"Full band acoustic set at the Long Island record store Looney Tunes. Average quality recording, but some really unique takes on \"Degausser,\" \"You Won't Know\" and \"Sic Transit Gloria\" among others."},
+  {date:"4/21/2008",venue:"Looney Tunes",city:"West Babylon",region:"NY",download:"https://drive.google.com/drive/folders/1KLSnZI_zERCdkL96RYBP_PQ7mtI_X4Mw?usp=drive_link",stream:"",setlist:"",video:"",notes:"Set at Long Island's Looney Tunes record store featuring a three-headed acoustic guitar monster with Jesse, Kevin Devine and Andy Hull of Manchester Orchestra. The 11-song set is a mixture of Brand New tracks, Kevin Devine tracks, Manchester Orchestra tracks and a few covers. If you're a fan of one of these artists, it's worth downloading. Fan of all three? For sure."},
+  {date:"7/21/2008",venue:"The Roxy",city:"West Hollywood",region:"CA",download:"https://drive.google.com/drive/folders/1gQG6DuQZceH0udEcNKWVBw9vhmGwds89?usp=drive_link",stream:"",setlist:"https://www.setlist.fm/setlist/jesse-lacey/2008/the-roxy-west-hollywood-ca-33c7d4d9.html",video:"https://www.youtube.com/watch?v=o2R5zO6_c3c&list=PL4B9CE347CBFBEFF2",notes:"No review currently available."},
+  {date:"3/7/2009",venue:"University of New Hampshire (UNH)",city:"Durham",region:"NH",download:"https://drive.google.com/drive/folders/1FQ-3N41FIGUw6RI886Dk1RbJEX_SAoFh?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/university-of-new-hampshire-durham-nh-7bd3faac.html",video:"",notes:"Average setlist, average quality recording that has a good amount of crowd interaction."},
+  {date:"3/28/2009",venue:"Neumos",city:"Seattle",region:"WA",download:"https://drive.google.com/drive/folders/10MfYtT85VWhSIY-liETFp9FeJhNnEcTi?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/neumos-seattle-wa-23d5e42f.html",video:"https://www.youtube.com/watch?v=hVoWkQSBdeI",notes:"Vinnie and Jesse did an acoustic set in Seattle to make up for the canceled Alaska show and it's a keeper. The set features the live debuts of \"Gasoline\" and \"Bride\" (great versions), a nice \"Moshi Moshi,\" great banter, lots of funny flubs and a fantastic cover of Liz Phair's \"Fuck and Run\" by Jesse."},
+  {date:"6/20/2009",venue:"Southside Festival / take-off GewerbePark",city:"Tutlingen",region:"Germany",download:"https://drive.google.com/drive/folders/1uM3tlsX0XXibbE2gEANkF3cqsAP9LlYn?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/take-off-gewerbepark-neuhausen-ob-eck-germany-5bdad3b8.html",video:"",notes:"Most certainly in the \"must have\" category. Appears to be ripped off German radio stream, but the quality is among the best of Brand New's live recordings. Incredible screams in the choruses and breakdown of the \"You Won't Know\" opener (seriously, this version is MASSIVE). Tremendous show, great recording."},
+  {date:"7/10/2009",venue:"North Star Bar",city:"Philadelphia",region:"PA",download:"https://drive.google.com/drive/folders/1vtRET5yvKjs-2q3UD5s6hxJEvI0SrMWl?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/north-star-bar-philadelphia-pa-bd6614a.html",video:"",notes:"Cool set -- features solid banter, \"Flying At Tree Level,\" a cover of Weezer's \"El Scorcho\" (!!!) and a cover of Neutral Milk Hotel's \"Oh Comely.\" Still worth a download for sure."},
+  {date:"7/12/2009",venue:"The Middle East",city:"Cambridge",region:"MA",download:"https://drive.google.com/drive/folders/1vhoPDYiXKKcyswpMnrIb5fkVRfm5_XVT?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/the-middle-east-cambridge-ma-5bd65fdc.html",video:"",notes:"This one is right on the fringe of a recommendation. It's a clean, although slightly low in volume, audience recording with nice, loud backing vocals from Vin. Some fun stuff in the setlist including \"Flying At Tree Level\" and the ever underrated \"Bed.\""},
+  {date:"7/18/2009",venue:"The Troubadour",city:"West Hollywood",region:"CA",download:"https://drive.google.com/drive/folders/1OEPeIvbFMNbywnwhBCHo9oVXVw6Gz6vN?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/troubadour-west-hollywood-ca-5bd65340.html",video:"",notes:"Audience recording of an 18-song set that is Your Favorite Weapon heavy for this live era but overall very balanced across the catalog. Goodies on the more rare side abound in the setlist in the form of \"Jaws Theme Swimming\" and \"Flying at Tree Level,\" in addition to the very seldomly performed \"Bed.\""},
+  {date:"10/21/2009",venue:"The House of Blues",city:"San Diego",region:"CA",download:"https://drive.google.com/drive/folders/17WX6CjGEmoXbf_bxSMRO93k-G-YpRrAx?usp=drive_link",stream:"",setlist:"https://www.setlist.fm/setlist/brand-new/2009/house-of-blues-san-diego-ca-bd7d9e2.html",video:"",notes:"No review currently available."},
+  {date:"10/31/2009",venue:"Verizon Wireless Theater",city:"Houston",region:"TX",download:"https://drive.google.com/drive/folders/1tezGT1xWDO5cHwc3cxJ6hokMy8cWyI88?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/verizon-wireless-theater-houston-tx-5bc1eba4.html",video:"",notes:"A pretty solid audience recording from about a month after \"Daisy\" came out. Band played show in full costumes. Often dubbed \"Halloween in Houston.\""},
+  {date:"11/17/2009",venue:"The House of Blues (Night 1)",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/1MaVZCMYfKyio1nurl5onPw1oVP5S68MN?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/house-of-blues-boston-ma-6bd73232.html",video:"",notes:"Average quality audience recording that's a bit muffled. 19 song set is Devil and Daisy heavy."},
+  {date:"11/18/2009",venue:"The House of Blues (Night 2)",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/1KV9U7tFjulySBzw6JZKXjNB4Zm3-WEGq?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/house-of-blues-boston-ma-5bd72f74.html",video:"",notes:"Similar quality to night 1, but with a 22 song set as opposed to a 19 song one. In terms of funny Brand New concert hijinks, you'd be hard pressed to find something better than Jesse screaming \"no!\" instead of \"yeah!\" in this rendition of \"Sowing Season.\""},
+  {date:"11/28/2009",venue:"Nassau Coliseum",city:"Uniondale",region:"NY",download:"https://drive.google.com/drive/folders/1nkxu5WFb_hJhgSSpN8EsazAoK8C2BLFo?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2009/nassau-veterans-memorial-coliseum-uniondale-ny-3bd72010.html",video:"",notes:"Definitely a historic show for the band -- playing sold out Nassau Coliseum as an ultimate kind of homecoming 2 months after the release of \"Daisy.\" Unfortunately this is a low quality audience recording and is missing the last 3 songs."},
+  {date:"4/27/2011",venue:"The Electric Factory",city:"Philadelphia",region:"PA",download:"https://drive.google.com/drive/folders/19FNfy6p02Eo5Um-UlLNoaqM42u39DecP?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2011/electric-factory-philadelphia-pa-2bd388a6.html",video:"",notes:"If you're a Brand New fan, you've almost certainly seen the videos from this show. This soundboard rip loses the incredible crowd you hear in the YouTube videos, but because the quality is so sublime, it's hard to care that much. 19 songs played tight, loud and fast. This one is a must-have."},
+  {date:"4/30/2011",venue:"Brubaker Auditorium at Messiah College",city:"Grantham",region:"PA",download:"https://drive.google.com/drive/folders/1_-q8050OYVTSDXEYD_Pp_d4cNngruPVV?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2011/brubaker-auditorium-grantham-pa-bd3819a.html",video:"",notes:"Coming at the end of the \"Keystone\" 5 show mini-tour in April 2011, this set is an absolute barn-burner, mainly due to the fact that Jesse's vocal chords sound like they've been put through a shredder from the past few nights...and it couldn't be more awesome. Must download."},
+  {date:"11/26/2011",venue:"The House of Blues",city:"Atlantic City",region:"NJ",download:"https://drive.google.com/drive/folders/1MAxHFKv-AnrIJxBEUhyBz_h7qObp1qrV?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2011/house-of-blues-atlantic-city-nj-6bd1ce1e.html",video:"",notes:"Nicely varied set featuring a 4-song acoustic break in the middle, but the quality of the bootleg is a little rough. The band sounds a bit distant and hollow."},
+  {date:"12/31/2011",venue:"The House of Blues",city:"Atlantic City",region:"NJ",download:"https://drive.google.com/drive/folders/1Mp7Z2tlwdZzx9yv9D4mU_Whql_35_CQF?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2011/house-of-blues-atlantic-city-nj-5bd17bf4.html",video:"",notes:"This certainly qualifies as a marathon set. With 3 sets and 27 songs, you almost have to download this one for all the great stuff it has. Fan requests yield nice surprises in the form of \"Flying at Tree Level,\" \"Moshi Moshi\" and \"Untitled 05\" (!!!) which according to Setlist.fm has only been played by Brand New 4 times in their history."},
+  {date:"12/20/2013",venue:"The Paramount",city:"Huntington",region:"NY",download:"https://drive.google.com/drive/folders/1EGp_v4WjMDqSCHABtBoZ9F-hr2jtwYdR?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2013/the-paramount-huntington-ny-bc45d3a.html",video:"",notes:"Infamously known as the \"Daisygate\" show, the show was Brand New's first on Long Island since the two night Paramount run in 2011. The discography show saw Brand New playing Devil and God and Daisy front-to-back, with some b-sides mixed in."},
+  {date:"12/22/2013",venue:"The Bell House",city:"Brooklyn",region:"NY",download:"https://drive.google.com/drive/folders/17dW1jP2aX5R3ph7uxpCfFv1ZkdRd4EHA?usp=drive_link",stream:"https://archive.org/details/brandnewthebellhouse2013",setlist:"http://www.setlist.fm/setlist/brand-new/2013/the-bell-house-brooklyn-ny-3c4591f.html",video:"https://www.youtube.com/watch?v=UHMUSxmiUIk&t=4s",notes:"Been listening since 2001 and going to shows since 2002 and this was: A) the best Brand New show I've ever seen, B) the best show I've ever seen period. Playing for an insanely small crowd of 300 people, this blistering, emotional set has it all -- and in great quality too. This is Brand New at their absolute finest. Download it."},
+  {date:"5/26/2014",venue:"Boston Calling / City Hall Plaza",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/1Qry75i0okHPBGXSi9sWpm44x4EHegLOZ?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2014/city-hall-plaza-boston-ma-33c08049.html",video:"https://www.youtube.com/watch?v=rUFuzmr8bSA",notes:"Warming up the stage at Boston Calling 2014 for Modest Mouse, Brand New put on a set that many claimed was worthy of a full on-headlining spot. The set is a tight 11 songs."},
+  {date:"6/21/2014",venue:"Pegasus Music Festival / Verizon Theatre",city:"Grand Prairie",region:"TX",download:"https://drive.google.com/drive/folders/18kOmRf1Y3HOhTGM-vUleHhez3w7OUmZt?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2014/verizon-theater-grand-prairie-tx-bc04502.html",video:"https://www.youtube.com/watch?v=0bck7TBMgqQ",notes:"Ripped from a full show video bootleg, the quality on this clip is quite solid. Though only a 12 song festival set, the songs are played with a lot of gusto. Seek out the video for the full experience."},
+  {date:"8/9/2014",venue:"Forest Hills Tennis Stadium",city:"Forest Hills",region:"NY",download:"https://drive.google.com/drive/folders/1fRCkSPmmnI3TpV4jdEFn_YEqik2zRE_N?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2014/forest-hills-tennis-stadium-new-york-ny-23cee84b.html",video:"",notes:"Once again warming up for Modest Mouse, Brand New put on a firey, energetic (near) hometown set that spanned a loud hour-and-a-half. Highlights include a full band bustout of \"Untitled 03\"/\"Brothers\" and an even more extended version of the extended \"Limousine\" (a powerful 10 minutes)."},
+  {date:"10/17/2014",venue:"The Civic Theatre",city:"New Orleans",region:"LA",download:"https://drive.google.com/drive/folders/1cNIYGCc6RowfKRKtURgBPcYBjp9wZMn7?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2014/civic-theatre-new-orleans-la-63cce647.html",video:"",notes:"In the midst of a south run with 20-plus song, 2 hour setlists rife with bustouts, this New Orleans show is no different. Across the 20 song set there's something for everyone."},
+  {date:"8/15/2015",venue:"Ommegang Brewery",city:"Cooperstown",region:"NY",download:"https://drive.google.com/drive/folders/1E02ZzZbcfuddK6DjhPjkclzuxY7fQEDy?usp=drive_link",stream:"https://archive.org/details/brandnewommegangbrewery2015",setlist:"https://www.setlist.fm/setlist/brand-new/2015/brewery-ommegang-cooperstown-ny-3bf7f4d4.html",video:"",notes:"Review forthcoming."},
+  {date:"9/13/2015",venue:"Lollapalooza Berlin / Tempelhof Airport",city:"Berlin",region:"Germany",download:"https://drive.google.com/drive/folders/1LspdulQkRmCVdjqX1ckcCQbPXGznTTPG?usp=drive_link",stream:"https://archive.org/details/brandnewlollapaloozaberlin2015",setlist:"http://www.setlist.fm/setlist/brand-new/2015/airport-berlin-tempelhof-berlin-germany-3bf4b47c.html",video:"https://www.youtube.com/watch?v=klHEABGJT0s",notes:"Ripped from the Lollapalooza Berlin stream, the 12 song set sees Brand New perform an energetic, visceral set. Jesse's screams sound primal as ever and the soundboard recording quality puts this one in the \"recommended\" category."},
+  {date:"10/2/2015",venue:"Austin City Limits Music Festival (Weekend 1) / Zilker Park",city:"Austin",region:"TX",download:"https://drive.google.com/drive/folders/1INpnU-a1vZaY8sBON7fS7aRam6mYPlaZ?usp=drive_link",stream:"https://archive.org/details/brandnewaustincitylimits2015",setlist:"http://www.setlist.fm/setlist/brand-new/2015/zilker-park-austin-tx-73f4c2d9.html",video:"https://www.youtube.com/watch?v=0WY-p72R6bU",notes:"Two Brand New soundboard recordings in a month? Pinch me. This soundboard from the weekend 1 stream of Austin City Limits 2015 manages to make the Lollapalooza Berlin soundboard sound poor (and that one is still pretty great). A pristine, perfect sound mix. This one is an absolute, no brainer must-download."},
+  {date:"10/8/2015",venue:"House of Blues",city:"Houston",region:"TX",download:"https://drive.google.com/drive/folders/12bwVtAa8CRSbhZfwbmcIpSJ1zd3UBwUF?usp=drive_link",stream:"https://soundcloud.com/caitlin-mcwilliams/brand-new-house-of-blues-houston-oct-8-2015-full-show",setlist:"http://www.setlist.fm/setlist/brand-new/2015/house-of-blues-houston-tx-63f40acb.html",video:"",notes:"Review forthcoming."},
+  {date:"6/1/2016",venue:"Vogue Theatre",city:"Vancouver",region:"BC",download:"https://drive.google.com/drive/folders/15x2vMkzqCBFMte2cnFPzDCvN76wyoBM_?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/vogue-theatre-vancouver-bc-canada-3bfee020.html",video:"https://www.youtube.com/watch?v=yaUNztXeHVw",notes:"A fantastic audience recording of Brand New's first show in 2016 and the first of a short Canadian headlining tour. \"I Am a Nightmare\" is a live debut, with Jesse smashing his guitar after it ends. At the end of the show, a banner revealed BRAND NEW 2000-2018, seeming to confirm the band's disbanding. Recommended."},
+  {date:"6/2/2016",venue:"Vogue Theatre",city:"Vancouver",region:"BC",download:"https://drive.google.com/drive/folders/1AZrFsjBaVbqITb09X_MWPheXeOiw_EIr?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/vogue-theatre-vancouver-bc-canada-5bfedf04.html",video:"",notes:"No review currently available."},
+  {date:"6/12/2016",venue:"Olympia de Montreal",city:"Montreal",region:"QC",download:"https://drive.google.com/drive/folders/1JJj9BcCiSjC-jyvRrekMzWdtugpXWIqG?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/olympia-de-montreal-montreal-qc-canada-3bfe0070.html",video:"https://www.youtube.com/watch?v=0-ULLjfz3ao",notes:"No review currently available."},
+  {date:"6/29/2016",venue:"Red Rocks Amphitheatre",city:"Morrison",region:"CO",download:"https://drive.google.com/drive/folders/1ErxLRVFQIv6gWVTJFZ68FJTwBVW1ch98?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/red-rocks-amphitheatre-morrison-co-73ffa699.html",video:"",notes:"Low quality audience recording that manages to be both blown out and distant. Recommended only for the most ardent completionist."},
+  {date:"7/2/2016",venue:"FirstMerit Bank Pavilion at Northerly Island",city:"Chicago",region:"IL",download:"https://drive.google.com/drive/folders/1cHnbwvpAH8pz1qk4C5j7JsPiXK8Qtm20?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/firstmerit-bank-pavilion-at-northerly-island-chicago-il-53ff8ff5.html",video:"",notes:"No review currently available."},
+  {date:"7/15/2016",venue:"Xfinity Center",city:"Mansfield",region:"MA",download:"https://drive.google.com/drive/folders/1tBLD0ugdKtc_Zx5kWm0latBf012WvN9w?usp=drive_link",stream:"https://archive.org/details/brandnewxfinitycenter2016",setlist:"https://www.setlist.fm/setlist/brand-new/2016/xfinity-center-mansfield-ma-1bff39d0.html",video:"",notes:"No review currently available."},
+  {date:"10/17/2016",venue:"Oakdale Theatre",city:"Wallingford",region:"CT",download:"https://drive.google.com/drive/folders/1T_AsGMxS9FKO1ugduBPRyWhlf3wwVM8V?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/toyota-presents-the-oakdale-theatre-wallingford-ct-1bfd5dd4.html",video:"https://www.youtube.com/watch?v=bYVP13jLJ48",notes:"Part of the 2016 Devil and God fall tour, so the album is performed in its entirety. An extended, reverb-laden jam after \"Limousine\" segues into a 10-minute version of \"You Won't Know,\" which features a \"Tautou\" refrain before transitioning back into a heavy jam outro."},
+  {date:"10/21/2016",venue:"The Deltaplex Arena",city:"Grand Rapids",region:"MI",download:"https://drive.google.com/drive/folders/1ceBNTYu-rg_6DT-QWtCfR-n-wajejgch?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/the-deltaplex-grand-rapids-mi-5bfd43fc.html",video:"",notes:"No review currently available."},
+  {date:"10/22/2016",venue:"The Rave / Eagles Club",city:"Milwaukee",region:"WI",download:"https://drive.google.com/drive/folders/1MLxeNkJyiGCRCdvLvhqOZMVnASMEO3BR?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/eagles-ballroom-milwaukee-wi-13fab909.html",video:"",notes:"No review currently available."},
+  {date:"10/31/2016",venue:"The Event Center at San Jose State University",city:"San Jose",region:"CA",download:"https://drive.google.com/drive/folders/1iXp6gsi16JMDfqEcfXa7WcwSVTwtKxCp?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/san-jose-state-event-center-arena-san-jose-ca-4bfaffa2.html",video:"",notes:"No review currently available."},
+  {date:"11/1/2016",venue:"The Chelsea",city:"Las Vegas",region:"NV",download:"https://drive.google.com/drive/folders/1C7vfFHO81TEeJagy7bv8fS8RGFL71_zE?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/the-chelsea-las-vegas-nv-63faf6e7.html",video:"",notes:"Recorded from the audience in pristine quality with a Zoom iQ7 for the first 8 songs, then average quality from an iPhone for the next 10. This show is available in both FLAC and MP3. Features an infamous incident during \"Millstone\" where Jesse stops the set to eject a fan who was fighting people in the pit."},
+  {date:"11/10/2016",venue:"EagleBank Arena",city:"Fairfax",region:"VA",download:"https://drive.google.com/drive/folders/1UQnutY-M98ZgX8jKpizr-ERjcNaDiXTm?usp=drive_link",stream:"",setlist:"http://www.setlist.fm/setlist/brand-new/2016/eaglebank-arena-fairfax-va-7bfa32d0.html",video:"",notes:"No review currently available."},
+  {date:"9/9/2017",venue:"High & Low Festival 2017 (Nos Events Center)",city:"San Bernardino",region:"CA",download:"https://drive.google.com/drive/folders/1btIunYttCoYCPtl4xq2z027503A3p0UW?usp=drive_link",stream:"",setlist:"https://www.setlist.fm/setlist/brand-new/2017/nos-events-center-san-bernardino-ca-3be2d098.html",video:"https://www.youtube.com/playlist?list=PL-hr--hytGneRdxz4spRq77mSlHOJZ8fb",notes:"No review currently available."},
+  {date:"10/15/2017",venue:"Fox Theatre",city:"Detroit",region:"MI",download:"https://drive.google.com/drive/folders/1sGjtJsH-EwWDDyrxXx9HqmYHkD0Jl8Ie?usp=drive_link",stream:"https://archive.org/details/117sowingseason",setlist:"https://www.setlist.fm/setlist/brand-new/2017/fox-theatre-detroit-mi-1be3ddd0.html",video:"",notes:"Opening up their first proper tour after a 275-day gap without shows, Brand New comes out strong at Detroit's Fox Theater in a phenomenal audience recording that's well worth a download. In a setlist heavy on Science Fiction (7 songs), Brand New perform the new material tightly and passionately. This recording is available in both FLAC and 320kbps MP3s."},
+  {date:"10/16/2017",venue:"Aragon Ballroom",city:"Chicago",region:"IL",download:"https://drive.google.com/drive/folders/1e6Zg9nxOuikBbfl62KZ6YjQjhu55mtv9?usp=drive_link",stream:"",setlist:"https://www.setlist.fm/setlist/brand-new/2017/aragon-ballroom-chicago-il-23e3d89f.html",video:"https://www.youtube.com/watch?v=D0Pd-dXi7fg",notes:"No review currently available."},
+  {date:"10/20/2017",venue:"Wang Theatre",city:"Boston",region:"MA",download:"https://drive.google.com/drive/folders/1EnXgg_49hxV4dEMZlE4Bm8Ov9JonwPml?usp=drive_link",stream:"https://archive.org/details/brandnewwangtheatre2017",setlist:"https://www.setlist.fm/setlist/brand-new/2017/wang-theatre-boston-ma-33e33cb1.html",video:"",notes:"No review currently available."},
+  {date:"1/31/2025",venue:"Silvertop",city:"Los Angeles",region:"CA",download:"https://drive.google.com/drive/folders/1FrpoCQdXwYNYx8lfsjtiC4c0NJTXSEG3?usp=sharing",stream:"https://archive.org/details/jesselaceylosangeles2005",setlist:"https://www.setlist.fm/setlist/jesse-lacey/2025/silvertop-los-angeles-ca-5b5d4300.html",video:"",notes:"Jesse Lacey acoustic solo set for charity to benefit the California wildfires. Somewhere between a campfire and a concert is where you'll find this very solid audience recording, an intimate take on songs from Brand New, Neutral Milk Hotel, and even the first ever live performance of \"Waste.\" It's an all around emotional and beautiful performance."},
+  {date:"3/2/2025",venue:"Eastside Bowl",city:"Madison",region:"TN",download:"https://drive.google.com/drive/folders/1gNBE50xn01FM0ahNs6ERFO-vi9ogfLKL?usp=sharing",stream:"",setlist:"https://www.setlist.fm/setlist/jesse-lacey/2025/eastside-bowl-nashville-tn-335bc401.html",video:"https://www.youtube.com/watch?v=NEhnSseJM9g",notes:"Jesse Lacey solo show."},
+  {date:"3/26/2025",venue:"The Bomb Factory",city:"Dallas",region:"TX",download:"https://drive.google.com/drive/folders/1ZzNY34Dxjp43aTI7HfUfVBnv456XpM4v?usp=sharing",stream:"https://archive.org/details/brandnewthebombfactory2025",setlist:"https://i.imgur.com/1X0wbfC.png",video:"https://www.youtube.com/watch?v=bkN3yDbbafQ",notes:"Brand New's first public performance in 2,705 days starts where the last one ended: The Bomb Factory in Dallas, Texas. Featuring a well rested band with seven members on stage, the sound on display is full, the playing is loud and tight. The show features the first ever public performances of \"Waste\" and \"Batter Up.\" For its place in the band's history and the exceptional quality, it's firmly in the must download category. Available in both MP3 and WAV formats."}
+];
+
+function getYear(d) {
+  if (/^\d{4}$/.test(d)) return d;
+  const p = d.split('/');
+  return p[2] || '????';
+}
+
+function fmtDate(d) {
+  if (/^\d{4}$/.test(d)) return d;
+  const [m, day, yr] = d.split('/');
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${months[+m-1]} ${+day}, ${yr}`;
+}
+
+function buildStats() {
+  const years = shows.map(s => getYear(s)).filter(y => /^\d{4}$/.test(y));
+  const uniqueYears = [...new Set(years)].sort();
+  const mustCount = shows.filter(s => /must.download|must.have|must download|must-have|highest order/.test((s.notes||'').toLowerCase())).length;
+  const soundboardCount = shows.filter(s => /soundboard|soundboard rip|ripped from.*radio|radio.*rip|ripped from.*stream/.test((s.notes||'').toLowerCase())).length;
+  const cities = new Set(shows.map(s => s.city).filter(Boolean));
+  const statsEl = document.getElementById('stats-grid');
+  if (statsEl) {
+    statsEl.innerHTML = [
+      { num: shows.length, label: 'Shows' },
+      { num: `${uniqueYears[0]}–${uniqueYears[uniqueYears.length-1]}`, label: 'Years' },
+      { num: cities.size, label: 'Cities' },
+      { num: mustCount, label: 'Must Downloads' },
+      { num: soundboardCount, label: 'Soundboards' },
+    ].map(s => `<div class="stat"><span class="stat-num">${s.num}</span><span class="stat-label">${s.label}</span></div>`).join('');
+  }
+}
+
+function buildSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const byYear = {};
+  for (const s of shows) {
+    const yr = getYear(s.date);
+    (byYear[yr] = byYear[yr] || []).push(s);
+  }
+  for (const yr of Object.keys(byYear).sort((a,b) => +a - +b)) {
+    const grp = document.createElement('div');
+    grp.className = 'year-group';
+    const lbl = document.createElement('div');
+    lbl.className = 'year-label';
+    lbl.innerHTML = `<span class="arrow">▶</span> ${yr} <span style="font-size:0.95rem;color:var(--text-dim);margin-left:auto;padding-right:0.5rem">${byYear[yr].length}</span>`;
+    const list = document.createElement('div');
+    list.className = 'show-list';
+    lbl.onclick = () => { list.classList.toggle('open'); lbl.classList.toggle('open'); };
+    for (const show of byYear[yr]) {
+      const item = document.createElement('div');
+      item.className = 'show-item';
+      item.textContent = show.city ? `${show.date} · ${show.city}` : show.date;
+      item.title = [show.venue, show.city, show.region].filter(Boolean).join(', ');
+      item.onclick = () => openShow(show, item);
+      list.appendChild(item);
+    }
+    grp.appendChild(lbl); grp.appendChild(list);
+    sidebar.appendChild(grp);
+  }
+}
+
+function openShow(show, el) {
+  document.querySelectorAll('.show-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('welcome').style.display = 'none';
+  const page = document.getElementById('show-page');
+  page.style.display = 'block';
+  const linkDefs = [
+    {label:'Download', icon:'⬇️', url:show.download},
+    {label:'Stream', icon:'▶️', url:show.stream},
+    {label:'Setlist', icon:'📋', url:show.setlist},
+    {label:'Full Show Video', icon:'🎬', url:show.video},
+  ].filter(l => l.url);
+  const loc = [show.city, show.region].filter(Boolean).join(', ');
+
+  // Badges
+  const n = (show.notes || '').toLowerCase();
+  const isMust = /must.download|must.have|must download|must-have|highest order/.test(n);
+  const isSoundboard = /soundboard|sound board|soundboard rip|ripped from.*radio|radio.*rip|ripped from.*stream/.test(n);
+  const isRecommended = /\brecommended\b/.test(n) && !isMust;
+  const badges = [
+    isMust        ? `<span class="badge badge-must">⭐ Must Download</span>` : '',
+    isSoundboard  ? `<span class="badge badge-soundboard">🎚 Soundboard</span>` : '',
+    isRecommended ? `<span class="badge badge-recommended">✓ Recommended</span>` : '',
+  ].filter(Boolean).join('');
+  const badgeHtml = badges ? `<div class="badges">${badges}</div>` : '';
+
+  // Extract Archive.org identifier for native audio player
+  let archiveEmbed = '';
+  if (show.stream && show.stream.includes('archive.org/details/')) {
+    const id = show.stream.split('archive.org/details/')[1].split('?')[0].trim();
+    archiveEmbed = `
+      <div class="player-section" id="archive-player">
+        <div class="notes-label">Stream</div>
+        <div class="player-loading" id="player-status">Loading tracklist…</div>
+        <ul class="track-list" id="track-list"></ul>
+        <div class="audio-bar" id="audio-bar" style="display:none">
+          <audio id="audio-el" controls></audio>
+        </div>
+      </div>`;
+    // Fetch tracks after render
+    setTimeout(() => loadArchiveTracks(id), 0);
+  }
+
+  page.innerHTML = `
+    <div class="show-date">${fmtDate(show.date)}</div>
+    ${show.venue ? `<div class="show-venue">${show.venue}</div>` : ''}
+    ${loc ? `<div class="show-location">${loc}</div>` : `<div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)"></div>`}
+    ${badgeHtml}
+    ${linkDefs.length ? `<div class="links-grid">${linkDefs.map(l=>`<a class="link-btn" href="${l.url}" target="_blank" rel="noopener"><span class="icon">${l.icon}</span><span>${l.label}</span></a>`).join('')}</div>` : `<p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:2rem">No links available for this show.</p>`}
+    ${archiveEmbed}
+    ${show.notes ? `<div class="notes-section"><div class="notes-label">Notes / Sound Quality</div><div class="notes-text">${show.notes}</div></div>` : ''}
+    ${show.setlist && show.setlist.includes('setlist.fm') ? `<div class="setlist-section" id="setlist-box"><div class="notes-label">Setlist</div><div class="player-loading" id="setlist-status">Loading setlist…</div><div id="setlist-content"></div></div>` : ''}
+  `;
+  // Fetch setlist if URL exists
+  if (show.setlist && show.setlist.includes('setlist.fm')) {
+    setTimeout(() => loadSetlist(show.setlist), 0);
+  }
+}
+
+async function loadSetlist(url) {
+  const statusEl = document.getElementById('setlist-status');
+  const contentEl = document.getElementById('setlist-content');
+  if (!statusEl || !contentEl) return;
+  try {
+    // Extract setlist ID from URL — last hyphenated segment
+    const match = url.match(/([a-f0-9]+)\.html/);
+    if (!match) { statusEl.textContent = 'Could not parse setlist ID.'; return; }
+    const id = match[1];
+    const res = await fetch(`https://api.setlist.fm/rest/1.0/setlist/${id}`, {
+      headers: { 'x-api-key': 'R7_oLj7puCr2zavKjBTT557lbDTdScbVnade', 'Accept': 'application/json' }
+    });
+    if (!res.ok) { statusEl.textContent = 'Setlist not found.'; return; }
+    const data = await res.json();
+    const sets = data.sets?.set || [];
+    if (!sets.length) { statusEl.textContent = 'No setlist data available.'; return; }
+    statusEl.style.display = 'none';
+    let html = '';
+    let songNum = 1;
+    sets.forEach((set, si) => {
+      if (set.encore) html += `<div class="setlist-encore-label">Encore ${set.encore > 1 ? set.encore : ''}</div>`;
+      html += `<ul class="setlist-songs">`;
+      (set.song || []).forEach(song => {
+        const tape = song.tape ? `<span class="setlist-tape">tape</span>` : '';
+        const cover = song.cover ? ` <span style="font-size:0.7rem;color:var(--text-dim)">(${song.cover.name} cover)</span>` : '';
+        html += `<li><span class="setlist-num">${song.tape ? '' : songNum++}</span>${song.name}${cover}${tape}</li>`;
+      });
+      html += `</ul>`;
+    });
+    contentEl.innerHTML = html;
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Could not load setlist. Try the Setlist button above.';
+  }
+}
+
+async function loadArchiveTracks(id) {
+  const statusEl = document.getElementById('player-status');
+  const trackList = document.getElementById('track-list');
+  if (!statusEl || !trackList) return;
+  try {
+    const res = await fetch(`https://archive.org/metadata/${id}`);
+    const data = await res.json();
+    const files = (data.files || []).filter(f =>
+      f.name && (f.name.endsWith('.mp3') || f.name.endsWith('.ogg') || f.name.endsWith('.flac'))
+      && f.source === 'original' || (f.name && f.name.endsWith('.mp3'))
+    );
+    // Dedupe and prefer mp3
+    const mp3s = files.filter(f => f.name.endsWith('.mp3'));
+    const tracks = mp3s.length ? mp3s : files;
+    if (!tracks.length) {
+      statusEl.textContent = 'No streamable tracks found. Use the Stream button above.';
+      return;
+    }
+    statusEl.style.display = 'none';
+    const audioEl = document.getElementById('audio-el');
+    const audioBar = document.getElementById('audio-bar');
+    tracks.forEach((track, i) => {
+      const url = `https://archive.org/download/${id}/${encodeURIComponent(track.name)}`;
+      const label = (track.title || track.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ')).trim();
+      const li = document.createElement('li');
+      li.className = 'track-item';
+      li.id = `track-${i}`;
+      li.innerHTML = `<button class="track-btn">▶</button><span class="track-name">${label}</span>`;
+      li.onclick = () => {
+        document.querySelectorAll('.track-item').forEach(t => t.classList.remove('playing'));
+        li.classList.add('playing');
+        li.querySelector('.track-btn').textContent = '▶';
+        audioEl.src = url;
+        audioBar.style.display = 'block';
+        audioEl.play();
+      };
+      trackList.appendChild(li);
+    });
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Could not load tracks. Try the Stream button above.';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  buildSidebar();
+  buildStats();
+});
+</script>
+</body>
+</html>
